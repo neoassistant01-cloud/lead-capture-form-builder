@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Capture Form Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0f0f12;
+      --surface: #1a1a1f;
+      --surface-hover: #25252b;
+      --border: #2a2a32;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    
+    .view-toggle {
+      display: flex;
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 4px;
+      gap: 4px;
+    }
+    
+    .view-toggle button {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .view-toggle button.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .panel {
+      display: none;
+    }
+    
+    .panel.active {
+      display: block;
+    }
+    
+    .form-settings {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-settings h2 {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+    
+    .form-settings input, .form-settings textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      font-family: inherit;
+      outline: none;
+    }
+    
+    .form-settings input:focus, .form-settings textarea:focus {
+      border-color: var(--accent);
+    }
+    
+    .form-settings textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .field-builder {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .field-builder h2 {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+    }
+    
+    .field-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .field-type-btn {
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .field-type-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+    
+    .fields-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .field-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+    
+    .field-item:hover {
+      border-color: var(--accent);
+    }
+    
+    .field-item.dragging {
+      opacity: 0.5;
+      background: var(--accent);
+    }
+    
+    .field-drag-handle {
+      color: var(--text-muted);
+      cursor: grab;
+      font-size: 1.25rem;
+    }
+    
+    .field-info {
+      flex: 1;
+    }
+    
+    .field-label {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .field-type {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .field-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .field-actions label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    
+    .field-actions input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+    
+    .delete-field {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 4px;
+    }
+    
+    .share-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .share-section h2 {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+    }
+    
+    .share-link-box {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .share-link-box input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: monospace;
+    }
+    
+    .copy-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .copy-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .preview-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+    
+    .preview-form h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .preview-form .description {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    
+    .form-group label .required {
+      color: var(--danger);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-group.checkbox label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
+      cursor: pointer;
+    }
+    
+    .form-group.checkbox input {
+      width: auto;
+    }
+    
+    .submit-form-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    
+    .submit-form-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .dashboard-empty {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+    
+    .submissions-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .submissions-table th,
+    .submissions-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .submissions-table th {
+      background: var(--surface-hover);
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    
+    .submissions-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .export-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      float: right;
+      margin-bottom: 1rem;
+      transition: background 0.2s;
+    }
+    
+    .export-btn:hover {
+      background: #16a34a;
+    }
+    
+    .clear-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: background 0.2s;
+    }
+    
+    .clear-btn:hover {
+      background: #dc2626;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .dropdown-options {
+      margin-top: 8px;
+      padding-left: 16px;
+    }
+    
+    .dropdown-options input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      header { flex-direction: column; align-items: flex-start; }
+      .view-toggle { width: 100%; }
+      .view-toggle button { flex: 1; }
+      .field-types { flex-direction: column; }
+      .field-type-btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Lead Capture Form Builder</h1>
+      <div class="view-toggle">
+        <button class="active" data-view="builder">Builder</button>
+        <button data-view="preview">Preview</button>
+        <button data-view="dashboard">Submissions</button>
+      </div>
+    </header>
+    
+    <div class="panel builder-panel active">
+      <div class="form-settings">
+        <h2>Form Settings</h2>
+        <input type="text" id="formTitle" placeholder="Form Title" value="Contact Us">
+        <input type="text" id="formDescription" placeholder="Form Description" value="We'd love to hear from you!">
+      </div>
+      
+      <div class="field-builder">
+        <h2>Add Fields</h2>
+        <div class="field-types">
+          <button class="field-type-btn" data-type="name">Name</button>
+          <button class="field-type-btn" data-type="email">Email</button>
+          <button class="field-type-btn" data-type="phone">Phone</button>
+          <button class="field-type-btn" data-type="dropdown">Dropdown</button>
+          <button class="field-type-btn" data-type="textarea">Textarea</button>
+          <button class="field-type-btn" data-type="checkbox">Checkbox</button>
+        </div>
+        <div class="fields-list" id="fieldsList"></div>
+      </div>
+      
+      <div class="share-section">
+        <h2>Share Your Form</h2>
+        <div class="share-link-box">
+          <input type="text" id="shareLink" readonly placeholder="Generate a shareable link...">
+          <button class="copy-btn" id="copyLink">Copy Link</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel preview-panel">
+      <div class="preview-form" id="previewForm">
+        <h3 id="previewTitle">Contact Us</h3>
+        <p class="description" id="previewDescription">We'd love to hear from you!</p>
+        <form id="leadForm" onsubmit="handleFormSubmit(event)">
+          <div id="previewFields"></div>
+          <button type="submit" class="submit-form-btn">Submit</button>
+        </form>
+      </div>
+    </div>
+    
+    <div class="panel dashboard-panel">
+      <button class="export-btn" id="exportBtn">Export CSV</button>
+      <button class="clear-btn" id="clearBtn">Clear All</button>
+      <div style="clear: both;"></div>
+      <div id="dashboardContent">
+        <div class="dashboard-empty">No submissions yet. Share your form to start collecting leads!</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast">Copied to clipboard!</div>
+  
+  <script>
+    let formConfig = {
+      title: 'Contact Us',
+      description: "We'd love to hear from you!",
+      fields: []
+    };
+    
+    let submissions = [];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFromStorage();
+      checkURLHash();
+      renderFieldsList();
+      renderPreview();
+      renderDashboard();
+      generateShareLink();
+      
+      document.querySelectorAll('.view-toggle button').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+      });
+      
+      document.querySelectorAll('.field-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => addField(btn.dataset.type));
+      });
+      
+      document.getElementById('formTitle').addEventListener('input', (e) => {
+        formConfig.title = e.target.value;
+        renderPreview();
+        generateShareLink();
+        saveToStorage();
+      });
+      
+      document.getElementById('formDescription').addEventListener('input', (e) => {
+        formConfig.description = e.target.value;
+        renderPreview();
+        saveToStorage();
+      });
+      
+      document.getElementById('copyLink').addEventListener('click', copyShareLink);
+      document.getElementById('exportBtn').addEventListener('click', exportCSV);
+      document.getElementById('clearBtn').addEventListener('click', clearSubmissions);
+    });
+    
+    function switchView(view) {
+      document.querySelectorAll('.view-toggle button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+      document.querySelectorAll('.panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.querySelector(`.${view}-panel`).classList.add('active');
+    }
+    
+    function addField(type) {
+      const fieldTypes = {
+        name: { type: 'text', label: 'Full Name', placeholder: 'Enter your name' },
+        email: { type: 'email', label: 'Email Address', placeholder: 'Enter your email' },
+        phone: { type: 'tel', label: 'Phone Number', placeholder: 'Enter your phone' },
+        dropdown: { type: 'dropdown', label: 'Select Option', options: ['Option 1', 'Option 2', 'Option 3'] },
+        textarea: { type: 'textarea', label: 'Message', placeholder: 'Enter your message' },
+        checkbox: { type: 'checkbox', label: 'I agree to the terms' }
+      };
+      
+      const field = {
+        id: Date.now().toString(),
+        ...fieldTypes[type],
+        required: type !== 'checkbox'
+      };
+      
+      formConfig.fields.push(field);
+      renderFieldsList();
+      renderPreview();
+      generateShareLink();
+      saveToStorage();
+    }
+    
+    function renderFieldsList() {
+      const list = document.getElementById('fieldsList');
+      list.innerHTML = formConfig.fields.map((field, index) => `
+        <div class="field-item" draggable="true" data-id="${field.id}" data-index="${index}">
+          <span class="field-drag-handle">:::</span>
+          <div class="field-info">
+            <div class="field-label">${field.label}${field.required ? ' <span style="color: var(--danger)">*</span>' : ''}</div>
+            <div class="field-type">${field.type}</div>
+            ${field.type === 'dropdown' ? `
+              <div class="dropdown-options">
+                <input type="text" value="${field.options?.join(', ')}" 
+                  onchange="updateDropdownOptions('${field.id}', this.value)"
+                  placeholder="Options (comma separated)">
+              </div>
+            ` : ''}
+          </div>
+          <div class="field-actions">
+            <label>
+              <input type="checkbox" ${field.required ? 'checked' : ''} 
+                onchange="toggleRequired('${field.id}', this.checked)">
+              Required
+            </label>
+            <button class="delete-field" onclick="deleteField('${field.id}')">X</button>
+          </div>
+        </div>
+      `).join('');
+      
+      setupDragAndDrop();
+    }
+    
+    function setupDragAndDrop() {
+      const items = document.querySelectorAll('.field-item');
+      let draggedItem = null;
+      
+      items.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          draggedItem = item;
+          item.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+          draggedItem = null;
+        });
+        
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        });
+        
+        item.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (draggedItem && draggedItem !== item) {
+            const fromIndex = parseInt(draggedItem.dataset.index);
+            const toIndex = parseInt(item.dataset.index);
+            moveField(fromIndex, toIndex);
+          }
+        });
+      });
+    }
+    
+    function moveField(fromIndex, toIndex) {
+      const field = formConfig.fields.splice(fromIndex, 1)[0];
+      formConfig.fields.splice(toIndex, 0, field);
+      renderFieldsList();
+      renderPreview();
+      generateShareLink();
+      saveToStorage();
+    }
+    
+    function toggleRequired(id, required) {
+      const field = formConfig.fields.find(f => f.id === id);
+      if (field) {
+        field.required = required;
+        renderFieldsList();
+        renderPreview();
+        saveToStorage();
+      }
+    }
+    
+    function deleteField(id) {
+      formConfig.fields = formConfig.fields.filter(f => f.id !== id);
+      renderFieldsList();
+      renderPreview();
+      generateShareLink();
+      saveToStorage();
+    }
+    
+    function updateDropdownOptions(id, value) {
+      const field = formConfig.fields.find(f => f.id === id);
+      if (field) {
+        field.options = value.split(',').map(o => o.trim()).filter(o => o);
+        renderPreview();
+        saveToStorage();
+      }
+    }
+    
+    function renderPreview() {
+      document.getElementById('previewTitle').textContent = formConfig.title;
+      document.getElementById('previewDescription').textContent = formConfig.description;
+      
+      const container = document.getElementById('previewFields');
+      
+      if (formConfig.fields.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No fields added yet. Add fields from the Builder tab.</p>';
+        return;
+      }
+      
+      container.innerHTML = formConfig.fields.map(field => {
+        const requiredAttr = field.required ? ' required' : '';
+        
+        switch (field.type) {
+          case 'text':
+          case 'email':
+          case 'tel':
+            return `
+              <div class="form-group">
+                <label>${field.label}${field.required ? ' <span class="required">*</span>' : ''}</label>
+                <input type="${field.type}" name="field_${field.id}" placeholder="${field.placeholder || ''}"${requiredAttr}>
+              </div>
+            `;
+          case 'dropdown':
+            return `
+              <div class="form-group">
+                <label>${field.label}${field.required ? ' <span class="required">*</span>' : ''}</label>
+                <select name="field_${field.id}"${requiredAttr}>
+                  <option value="">Select...</option>
+                  ${(field.options || []).map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+              </div>
+            `;
+          case 'textarea':
+            return `
+              <div class="form-group">
+                <label>${field.label}${field.required ? ' <span class="required">*</span>' : ''}</label>
+                <textarea name="field_${field.id}" placeholder="${field.placeholder || ''}"${requiredAttr}></textarea>
+              </div>
+            `;
+          case 'checkbox':
+            return `
+              <div class="form-group checkbox">
+                <label>
+                  <input type="checkbox" name="field_${field.id}"${requiredAttr}>
+                  ${field.label}
+                </label>
+              </div>
+            `;
+          default:
+            return '';
+        }
+      }).join('');
+    }
+    
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const submission = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        data: {}
+      };
+      
+      formConfig.fields.forEach(field => {
+        if (field.type === 'checkbox') {
+          submission.data[field.label] = e.target.querySelector(`[name="field_${field.id}"]`)?.checked ? 'Yes' : 'No';
+        } else {
+          submission.data[field.label] = formData.get(`field_${field.id}`) || '';
+        }
+      });
+      
+      submissions.push(submission);
+      saveToStorage();
+      renderDashboard();
+      
+      e.target.reset();
+      showToast('Submitted successfully!');
+    }
+    
+    function renderDashboard() {
+      const container = document.getElementById('dashboardContent');
+      
+      if (submissions.length === 0) {
+        container.innerHTML = '<div class="dashboard-empty">No submissions yet. Share your form to start collecting leads!</div>';
+        return;
+      }
+      
+      const columns = ['Timestamp', ...formConfig.fields.map(f => f.label)];
+      
+      container.innerHTML = `
+        <table class="submissions-table">
+          <thead>
+            <tr>
+              ${columns.map(col => `<th>${col}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${submissions.map(sub => `
+              <tr>
+                <td>${new Date(sub.timestamp).toLocaleString()}</td>
+                ${formConfig.fields.map(f => `<td>${sub.data[f.label] || '-'}</td>`).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+    
+    function exportCSV() {
+      if (submissions.length === 0) {
+        showToast('No submissions to export!');
+        return;
+      }
+      
+      const columns = ['Timestamp', ...formConfig.fields.map(f => f.label)];
+      const rows = submissions.map(sub => [
+        sub.timestamp,
+        ...formConfig.fields.map(f => {
+          const val = sub.data[f.label] || '';
+          return val.toString().includes(',') ? '"' + val + '"' : val;
+        })
+      ]);
+      
+      const csv = [columns.join(','), ...rows.map(r => r.join(','))].join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'leads-' + new Date().toISOString().split('T')[0] + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showToast('CSV exported!');
+    }
+    
+    function clearSubmissions() {
+      if (confirm('Are you sure you want to clear all submissions?')) {
+        submissions = [];
+        saveToStorage();
+        renderDashboard();
+        showToast('Submissions cleared!');
+      }
+    }
+    
+    function generateShareLink() {
+      const config = {
+        title: formConfig.title,
+        description: formConfig.description,
+        fields: formConfig.fields.map(f => ({ type: f.type, label: f.label, required: f.required, options: f.options, placeholder: f.placeholder }))
+      };
+      
+      const hash = btoa(encodeURIComponent(JSON.stringify(config));
+      const link = window.location.origin + window.location.pathname + '#form=' + hash;
+      document.getElementById('shareLink').value = link;
+    }
+    
+    function copyShareLink() {
+      const input = document.getElementById('shareLink');
+      input.select();
+      document.execCommand('copy');
+      showToast('Copied to clipboard!');
+    }
+    
+    function checkURLHash() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#form=')) {
+        try {
+          const config = JSON.parse(decodeURIComponent(atob(hash.substring(6)));
+          formConfig.title = config.title || formConfig.title;
+          formConfig.description = config.description || formConfig.description;
+          formConfig.fields = config.fields || [];
+          
+          document.getElementById('formTitle').value = formConfig.title;
+          document.getElementById('formDescription').value = formConfig.description;
+          
+          switchView('preview');
+        } catch (e) {
+          console.error('Failed to parse form config:', e);
+        }
+      }
+    }
+    
+    function saveToStorage() {
+      localStorage.setItem('leadCaptureFormConfig', JSON.stringify(formConfig));
+      localStorage.setItem('leadCaptureSubmissions', JSON.stringify(submissions));
+    }
+    
+    function loadFromStorage() {
+      try {
+        const config = localStorage.getItem('leadCaptureFormConfig');
+        if (config) {
+          formConfig = JSON.parse(config);
+          document.getElementById('formTitle').value = formConfig.title;
+          document.getElementById('formDescription').value = formConfig.description;
+        }
+        
+        const subs = localStorage.getItem('leadCaptureSubmissions');
+        if (subs) {
+          submissions = JSON.parse(subs);
+        }
+      } catch (e) {
+        console.error('Failed to load from storage:', e);
+      }
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
